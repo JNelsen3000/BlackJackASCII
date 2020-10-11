@@ -14,18 +14,26 @@ namespace BlackJack
 
         public int BetAmount { get; }
         public Player PlayerThatPlacedBet { get; }
-        // If player was dealt a natural blackjack and dealer was not,
-        // player wins 1.5 * bet.
+        
+        /// <summary>
+        /// If player was dealt a natural blackjack and dealer was not, player wins 1.5 * bet.
+        /// </summary>
         public void BlackJackPayout()
         {
             this.PlayerThatPlacedBet.TotalMoney += (this.BetAmount / 2) * 3;
         }
-        // Pays player bet * 2.
+        
+        /// <summary>
+        /// Pays player bet * 2.
+        /// </summary>
         public void NormalPayout()
         {
             this.PlayerThatPlacedBet.TotalMoney += this.BetAmount * 2;
         }
-        // Pays player back their bet.
+        
+        /// <summary>
+        /// Pays player back their bet.
+        /// </summary>
         public void ReturnBet()
         {
             this.PlayerThatPlacedBet.TotalMoney += this.BetAmount;
