@@ -1,8 +1,5 @@
 ﻿using BlackJack;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace BlackJackTests
 {
@@ -15,12 +12,12 @@ namespace BlackJackTests
             // Arrange
             Deck testDeck = new Deck();
             Player testPlayer = new Player(1, "test");
-            Player[] Table = { testPlayer };
+            Player[] table = { testPlayer };
 
             // Act
             for (int i = 6; i > 0; i--)
             {
-                testDeck.Deal(Table);
+                testDeck.Deal(table);
             }
             // Assert
             Assert.IsTrue(testPlayer.Busted);
@@ -37,7 +34,6 @@ namespace BlackJackTests
         {
             // Arrange
             Player testPlayer = new Player(1, "test");
-            Player[] Table = { testPlayer };
             Card card1 = new Card("sample", "soooooots", a);
             Card card2 = new Card("sample", "soooooots", b);
             Card card3 = new Card("sample", "soooooots", c);
@@ -57,7 +53,6 @@ namespace BlackJackTests
         {
             // Arrange
             Player testPlayer = new Player(1, "test");
-            Player[] Table = { testPlayer };
             Card card1 = new Card("Ace", "soooooots", 11);
             Card card2 = new Card("sample", "soooooots", 10);
             Card card3 = new Card("sample", "soooooots", 4);

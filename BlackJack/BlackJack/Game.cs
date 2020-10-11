@@ -1,60 +1,83 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace BlackJack
 {
     public class Game
     {
-        //Represents the deck of cards used in the game.
-        public Deck MainDeck = new Deck();
-        //Represents all players and house
-        public Player[] Table { get; }
-        //Tracks the active player
+        /// <summary>
+        /// Represents the deck of cards used in the game.
+        /// </summary>
+        private Deck mainDeck = new Deck();
+        
+        /// <summary>
+        /// Represents all players and house
+        /// </summary>
+        public Player[] table { get; }
+        
+        /// <summary>
+        /// Tracks the active player
+        /// </summary>
         public Player CurrentPlayer { get; private set; }
-        //Tracks the end of game
-        public bool GameOver { get; private set; } = false;
-        //Creates deck, populates table
+        
+        /// <summary>
+        /// Tracks the end of game
+        /// </summary>
+        private bool GameOver { get; set; }
+        
+        /// <summary>
+        /// Creates deck, populates table
+        /// </summary>
+        /// <param name="players">The number of players</param>
         public Game(int players)
         {
-            this.Table = new Player[players + 1];
-            this.Table[0] = new House();
+            if (players < 1) throw new ArgumentOutOfRangeException(nameof(players), "There must be at least 1 player");
+            
+            this.table = new Player[players + 1];
+            this.table[0] = new House();
             for (int i = 1; i <= players; i++)
             {
                 Console.WriteLine($"Player {i}, enter your name:");
                 string name = Console.ReadLine();
                 if (string.IsNullOrWhiteSpace(name)) { name = "Player " + i; }
-                this.Table[i] = new Player(i, name);
+                this.table[i] = new Player(i, name);
                 Console.WriteLine();
             }
-            this.CurrentPlayer = Table[1];
+            this.CurrentPlayer = table[1];
         }
-        //Makes players discard hands and shuffles deck
-        public void CollectCards()
+        
+        /// <summary>
+        /// Makes players discard hands and shuffles deck
+        /// </summary>
+        private void CollectCards()
         {
-            foreach (Player player in Table)
+            foreach (Player player in table)
             {
                 player.DiscardHand();
-                MainDeck.Shuffle();
+                mainDeck.Shuffle();
             }
         }
-        //Keeps game running until GameOver == true.
+        /// <summary>
+        /// Keeps game running until GameOver == true.
+        /// </summary>
         public void RunGame()
         {
-            while (this.GameOver == false)
+            while (!this.GameOver)
             {
                 PlayRound();
             }
         }
-        //Runs a full round of the game.
-        public void PlayRound()
+        
+        /// <summary>
+        /// Runs a full round of the game.
+        /// </summary>
+        private void PlayRound()
         {
             this.CollectCards();
-            this.PlaceBets(Table);
-            MainDeck.Deal(Table);
+            this.PlaceBets();
+            mainDeck.Deal(table);
             this.RefreshDisplay(false);
 
-            if (Table[0].HasBlackJackOnDeal())
+            if (table[0].HasBlackJackOnDeal)
             {
                 DealerWasDealtBlackJack();
                 RefreshDisplay(true);
@@ -67,9 +90,9 @@ namespace BlackJack
                 ResolveBets();
             }
 
-            if (EndGameLogic.PlayerAtTableWonOrLost(Table))
+            if (EndGameLogic.PlayerAtTableWonOrLost(table))
             {
-                EndGameLogic.DisplayWinnerAndScores(Table);
+                EndGameLogic.DisplayWinnerAndScores(table);
                 this.GameOver = true;
                 Console.WriteLine("Press enter to exit.");
                 Console.ReadLine();
@@ -79,25 +102,31 @@ namespace BlackJack
             Console.ReadLine();
             this.AdvanceCurrentPlayer();
         }
-        //Takes appropriate action when house was dealt a natural blackjack
+        
+        /// <summary>
+        /// Takes appropriate action when house was dealt a natural blackjack
+        /// </summary>
         private void DealerWasDealtBlackJack()
         {
-            for (int i = 1; i < Table.Length; i ++)
+            for (int i = 1; i < table.Length; i ++)
             {
-                if (Table[i].HasBlackJackOnDeal())
+                if (table[i].HasBlackJackOnDeal)
                 {
-                    Table[i].TotalMoney += Table[i].PlayerBet.BetAmount;
-                    Console.WriteLine($"{Table[i].PlayerName} also has a natural blackjack and gets their bet returned.");
+                    table[i].TotalMoney += table[i].PlayerBet.BetAmount;
+                    Console.WriteLine($"{table[i].PlayerName} also has a natural blackjack and gets their bet returned.");
                 }
             }
         }
-        //Asks each player if they want to hit or stand.
+        
+        /// <summary>
+        /// Asks each player if they want to hit or stand.
+        /// </summary>
         private void AskPlayersHitOrStand()
         {
-            for (int i = 1; i < Table.Length; i++)
+            for (int i = 1; i < table.Length; i++)
             {
-                Player player = Table[i];
-                if (player.HasBlackJackOnDeal())
+                Player player = table[i];
+                if (player.HasBlackJackOnDeal)
                 {
                     player.PlayerBet.BlackJackPayout();
                     Console.WriteLine($"{player.PlayerName} has a natural blackjack!  Payout = {(player.PlayerBet.BetAmount / 2) * 3}");
@@ -108,7 +137,7 @@ namespace BlackJack
                 {
                     while (player.PlayerWantsHit())
                     {
-                        player.Hit(MainDeck.GetFreshCard());
+                        player.Hit(mainDeck.GetFreshCard());
                         this.RefreshDisplay(false);
                     }
                 }
@@ -116,25 +145,32 @@ namespace BlackJack
                 this.RefreshDisplay(false);
             }
         }
-        //Asks house hit or stand.
+        /// <summary>
+        /// Asks house hit or stand.
+        /// </summary>
         private void AskDealerHitOrStand(){
-            while(Table[0].PlayerWantsHit()) 
+            while(table[0].PlayerWantsHit()) 
             {
-                Table[0].Hit(MainDeck.GetFreshCard());
+                table[0].Hit(mainDeck.GetFreshCard());
                 this.RefreshDisplay(true);
             }
             this.RefreshDisplay(true);
         }
-        //Allows each player to input their bet.
-        private void PlaceBets(Player[] table)
+        /// <summary>
+        /// Allows each player to input their bet.
+        /// </summary>
+        private void PlaceBets()
         {
-            foreach (Player player in table)
+            foreach (Player player in this.table)
             {
                 player.PlaceBet();
                 Console.Clear();
             }
         }
-        //Refreshes screen to show updated hands, scores, and bets.
+        /// <summary>
+        /// Refreshes screen to show updated hands, scores, and bets.
+        /// </summary>
+        /// <param name="showHouse">Whether the house should be shown</param>
         private void RefreshDisplay(bool showHouse)
         {
             Console.Clear();
@@ -143,52 +179,65 @@ namespace BlackJack
             DisplayHands(showHouse);
             Console.WriteLine();
         }
-        //Displays scores and current bets
+        
+        /// <summary>
+        /// Displays scores and current bets
+        /// </summary>
         private void DisplayBetsAndScores()
         {
-            for (int i = 1; i < Table.Length; i++)
+            for (int i = 1; i < table.Length; i++)
             {
-                Console.WriteLine(Table[i].PlayerName + " bet " + Table[i].PlayerBet.BetAmount + " and has " + Table[i].TotalMoney + " remaining.");
+                Console.WriteLine($"{table[i].PlayerName} bet {table[i].PlayerBet.BetAmount} and has {table[i].TotalMoney} remaining.");
             }
             Console.WriteLine();
         }
-        //Displays hands, allowing program to show house's hand or not
+        
+        /// <summary>
+        /// Displays hands, allowing program to show house's hand or not
+        /// </summary>
+        /// <param name="showHouse">Whether or not the house should be shown</param>
         private void DisplayHands(bool showHouse)
         {
-            foreach (Player player in Table)
+            foreach (Player player in table)
             {
                 if (player == CurrentPlayer) { Console.ForegroundColor = ConsoleColor.Red; }
-                Console.Write(player.PlayerName + ": ");
+                Console.Write($"{player.PlayerName}: ");
                 Console.ResetColor();
-                string hand;
-                hand = player.DisplayHand(showHouse);
-                Console.WriteLine(hand);
+                Console.WriteLine(player.DisplayHand(showHouse));
             }
         }
-        //Rotates current player through entire table
+        
+        /// <summary>
+        /// Rotates current player through entire table
+        /// </summary>
         private void AdvanceCurrentPlayer()
         {
-            if (CurrentPlayer.PlayerNum == Table.Length - 1)
+            if (CurrentPlayer.PlayerNum == table.Length - 1)
             {
-                CurrentPlayer = Table[0];
-            } else
+                CurrentPlayer = table[0];
+            } 
+            else
             {
-                CurrentPlayer = Table[CurrentPlayer.PlayerNum + 1];
+                CurrentPlayer = table[CurrentPlayer.PlayerNum + 1];
             }
         }
-        //Makes appropriate payments for each bet.
+        
+        /// <summary>
+        /// Makes appropriate payments for each bet.
+        /// </summary>
         private void ResolveBets()
         {
-            House house = (House)Table[0];
+            House house = (House)table[0];
 
-            for (int i = 1; i < Table.Length; i++)
+            for (int i = 1; i < table.Length; i++)
             {
-                Player player = Table[i];
-                if (player.HasBlackJackOnDeal())
+                Player player = table[i];
+                if (player.HasBlackJackOnDeal)
                 {
                     continue;
                 }
-                else if (player.Busted || (player.TotalInHand < house.TotalInHand && house.Busted == false))
+
+                if (player.Busted || (player.TotalInHand < house.TotalInHand && house.Busted == false))
                 {
                     Console.WriteLine($"{player.PlayerName} lost their bet of {player.PlayerBet.BetAmount}.");
                 }
@@ -196,7 +245,8 @@ namespace BlackJack
                 {
                     Console.WriteLine($"{player.PlayerName} tied with the House.  The bet of {player.PlayerBet.BetAmount} is returned.");
                     player.PlayerBet.ReturnBet();
-                } else
+                } 
+                else
                 {
                     Console.WriteLine($"{player.PlayerName} wins {player.PlayerBet.BetAmount * 2}!");
                     player.PlayerBet.NormalPayout();

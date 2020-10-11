@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace BlackJack
 {
     public class Deck
     {
-        private Card[] MainDeck = new Card[52];
-        private List<int> UsedCards = new List<int>();
+        private readonly Card[] mainDeck = new Card[52];
+        private readonly List<int> usedCards = new List<int>();
+        private readonly Random random = new Random();
 
         public Deck()
         {
@@ -15,16 +15,19 @@ namespace BlackJack
             string[] suits = { "hearts", "clubs", "diamonds", "spades" };
             foreach (string suit in suits)
             {
-                MainDeck[currentCard] = new Card("Ace", suit, 11);
+                mainDeck[currentCard] = new Card("Ace", suit, 11);
+                
                 currentCard++;
                 for (int i = 2; i < 11; i++)
                 {
-                    MainDeck[currentCard] = new Card(i.ToString(), suit, i);
+                    mainDeck[currentCard] = new Card(i.ToString(), suit, i);
                     currentCard++;
                 }
-                MainDeck[currentCard] = new Card("Jack", suit, 10);
-                MainDeck[currentCard + 1] = new Card("Queen", suit, 10);
-                MainDeck[currentCard + 2] = new Card("King", suit, 10);
+                
+                mainDeck[currentCard] = new Card("Jack", suit, 10);
+                mainDeck[currentCard + 1] = new Card("Queen", suit, 10);
+                mainDeck[currentCard + 2] = new Card("King", suit, 10);
+                
                 currentCard += 3;
             }
         }
@@ -33,28 +36,34 @@ namespace BlackJack
         // and adds it to UsedCards
         public Card GetFreshCard()
         {
-            Random random = new Random();
-            Card currentCard;
+            if (usedCards.Count == mainDeck.Length) throw new InvalidOperationException("You've drawn all cards in the deck");
+            
             while (true)
             {
                 int nextCard = random.Next(52);
-                if (!UsedCards.Contains(nextCard))
+                if (!usedCards.Contains(nextCard))
                 {
-                    currentCard = MainDeck[nextCard];
-                    UsedCards.Add(nextCard);
+                    Card currentCard = mainDeck[nextCard];
+                    usedCards.Add(nextCard);
+                    
                     return currentCard;
                 }
             }
         }
 
-        // Resets UsedCards
+        /// <summary>
+        /// Resets UsedCards
+        /// </summary>
         public void Shuffle()
         {
-            UsedCards.Clear();
+            usedCards.Clear();
         }
 
-        // Add cards to each player's hand and to house's hand
-        public void Deal(Player[] table)
+        /// <summary>
+        /// Add cards to each player's hand and to house's hand
+        /// </summary>
+        /// <param name="table">The players at the table</param>
+        public void Deal(IEnumerable<Player> table)
         {
             foreach (Player player in table)
             {

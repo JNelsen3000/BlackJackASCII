@@ -6,28 +6,19 @@ namespace BlackJack
 {
     public class Card
     {
-        private string name { get; }
-        public string Name { get { return this.name; } }
-        private string Suit { get; }
-        private int value { get; }
-        public int Value
-        {
-            get
-            {
-                return value;
-            }
-        }
+        private readonly string suit;
+        
+        public string Name { get; }
+        
+        public int Value { get; }
 
         public Card(string name, string suit, int value)
         {
-            this.name = name;
-            this.Suit = suit;
-            this.value = value;
+            this.Name = name;
+            this.suit = suit;
+            this.Value = value;
         }
 
-        public string ViewCard()
-        {
-            return $"{Name} of {Suit}";
-        }
+        public string ViewCard() => $"{Name} of {suit}";
     }
 }
